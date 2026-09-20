@@ -5,10 +5,14 @@ import bcrypt from 'bcrypt';
 import { db } from 'src/db';
 import { users } from 'src/db/schema';
 import { SignUpDto } from './dtos/sign-up.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UsersService) { }
+  constructor(
+    private readonly userService: UsersService,
+    private readonly jwtService: JwtService,
+  ) { }
 
   // TODO: create a dto and validation
   async signUp({ username, password }: SignUpDto) {
@@ -21,14 +25,20 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const hash: string = await bcrypt.hash(password, 10);
 
-    await db.insert(users).values({
-      username,
-      password: hash,
-    });
+    const user = await db
+      .insert(users)
+      .values({
+        username,
+        password: hash,
+      })
+      .returning();
+
+    const payload = { id: user[0].id, username };
 
     return {
       message: 'User registered successfully.',
       username,
+      access_token: await this.jwtService.signAsync(payload),
     };
   }
 }
