@@ -9,10 +9,11 @@ import { UsersService } from './users/users.service';
 import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
+import { UsersController } from './users/users.controller';
 
 @Module({
   imports: [FilesModule, AuthModule],
-  controllers: [AppController, AuthController],
+  controllers: [AppController, AuthController, UsersController],
   providers: [
     AppService,
     FileMetadataService,

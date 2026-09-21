@@ -13,7 +13,7 @@ export class AuthService {
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async signUp({ username, password }: SignUpDto) {
     const exists = await this.userService.findOne(username);
