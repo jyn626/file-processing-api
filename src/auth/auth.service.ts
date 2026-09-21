@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import { db } from 'src/db';
 import { users } from 'src/db/schema';
 import { SignUpDto } from './dtos/sign-up.dto';
+import { SignInDto } from './dtos/sign-in.dto';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -14,7 +15,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) { }
 
-  // TODO: create a dto and validation
   async signUp({ username, password }: SignUpDto) {
     const exists = await this.userService.findOne(username);
 
@@ -38,6 +38,28 @@ export class AuthService {
     return {
       message: 'User registered successfully.',
       username,
+      access_token: await this.jwtService.signAsync(payload),
+    };
+  }
+
+  async signIn({ username, password }: SignInDto) {
+    // check if the user exists
+    const user = await this.userService.findOne(username);
+    if (!user) {
+      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+    }
+
+    // compare password
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const compare = await bcrypt.compare(password, user.password);
+
+    if (!compare) {
+      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+    }
+
+    const payload = { id: user.id, username };
+
+    return {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
