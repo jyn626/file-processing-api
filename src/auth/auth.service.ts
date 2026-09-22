@@ -13,7 +13,7 @@ export class AuthService {
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async signUp({ username, password }: SignUpDto) {
     const exists = await this.userService.findOne(username);
@@ -42,11 +42,18 @@ export class AuthService {
     };
   }
 
-  async signIn({ username, password }: SignInDto) {
+  async signIn(payload: { id: number; username: string }) {
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
+  }
+
+  async validate({ username, password }: SignInDto) {
     // check if the user exists
     const user = await this.userService.findOne(username);
     if (!user) {
-      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+      return false;
+      // throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
     }
 
     // compare password
@@ -54,13 +61,12 @@ export class AuthService {
     const compare = await bcrypt.compare(password, user.password);
 
     if (!compare) {
-      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+      return false;
+      // throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
     }
 
     const payload = { id: user.id, username };
 
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+    return payload;
   }
 }
