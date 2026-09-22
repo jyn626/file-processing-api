@@ -1,5 +1,11 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
-import { relations } from 'drizzle-orm';
+import { relations, defineRelations } from 'drizzle-orm';
+
+export const users = sqliteTable('Users', {
+  id: integer().primaryKey({ autoIncrement: true }),
+  username: text('username').notNull().unique(),
+  password: text('password').notNull(),
+});
 
 export const files = sqliteTable('Files', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -10,6 +16,9 @@ export const files = sqliteTable('Files', {
   category: text('category', {
     enum: ['Document', 'Image', 'Video', 'Audio', 'Others'],
   }).default('Others'),
+  userId: integer('userId')
+    .notNull()
+    .references(() => users.id),
 });
 
 export const fileMetadatas = sqliteTable('FileMetadatas', {
@@ -25,6 +34,9 @@ export const fileMetadatas = sqliteTable('FileMetadatas', {
     .unique(),
 });
 
+// !! THIS IS V1 RELATION IN DRIZZLE,
+// !! I CANT USE V2 EVEN THOUGH I UPGRADED FOR SOME REASON
+
 export const filesRelations = relations(files, ({ one }) => ({
   fileMetadatas: one(fileMetadatas, {
     fields: [files.id],
@@ -32,8 +44,26 @@ export const filesRelations = relations(files, ({ one }) => ({
   }),
 }));
 
-export const users = sqliteTable('Users', {
-  id: integer().primaryKey({ autoIncrement: true }),
-  username: text('username').notNull().unique(),
-  password: text('password').notNull(),
-});
+export const usersToFilesRelation = relations(users, ({ many }) => ({
+  files: many(files),
+}))
+
+export const filesToUserRelation = relations(files, ({ one }) => ({
+  user: one(users, {
+    fields: [files.userId],
+    references: [users.id],
+  }),
+}));
+
+// // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+// export const usersToFilesRelation = defineRelations({ users, files }, (r) => ({
+//   users: {
+//     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+//     files: r.many.files({
+//       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+//       from: r.users.id,
+//       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+//       to: r.files.userId,
+//     }),
+//   },
+// }));

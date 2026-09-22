@@ -16,8 +16,17 @@ CREATE TABLE `Files` (
 	`path` text NOT NULL,
 	`sha` text,
 	`extension` text,
-	`category` text DEFAULT 'Others'
+	`category` text DEFAULT 'Others',
+	`userId` integer NOT NULL,
+	FOREIGN KEY (`userId`) REFERENCES `Users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `Files_path_unique` ON `Files` (`path`);--> statement-breakpoint
-CREATE UNIQUE INDEX `Files_sha_unique` ON `Files` (`sha`);
+CREATE UNIQUE INDEX `Files_sha_unique` ON `Files` (`sha`);--> statement-breakpoint
+CREATE TABLE `Users` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`username` text NOT NULL,
+	`password` text NOT NULL
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `Users_username_unique` ON `Users` (`username`);

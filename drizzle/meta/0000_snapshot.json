@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "661499a3-c204-4531-8554-04b55a5dc930",
+  "id": "e95b2fcd-04f0-4540-a758-b27a279d5293",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "FileMetadatas": {
@@ -130,6 +130,13 @@
           "notNull": false,
           "autoincrement": false,
           "default": "'Others'"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -144,6 +151,59 @@
           "name": "Files_sha_unique",
           "columns": [
             "sha"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "Files_userId_Users_id_fk": {
+          "name": "Files_userId_Users_id_fk",
+          "tableFrom": "Files",
+          "tableTo": "Users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "Users": {
+      "name": "Users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "Users_username_unique": {
+          "name": "Users_username_unique",
+          "columns": [
+            "username"
           ],
           "isUnique": true
         }

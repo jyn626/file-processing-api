@@ -3,7 +3,6 @@ import { JwtGuard } from 'src/guards/auth/passport.jwt.guard';
 
 @Controller('users')
 export class UsersController {
-  
   @Get()
   @UseGuards(JwtGuard)
   getMe(@Request() req) {
