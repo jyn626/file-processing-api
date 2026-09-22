@@ -125,7 +125,7 @@ export class FilesService {
     });
   }
 
-  async upload(name: string, fpath: string) {
+  async upload(name: string, fpath: string, userId: number) {
     try {
       const ext = path.extname(name);
       const file: typeof files.$inferInsert = {
@@ -133,6 +133,7 @@ export class FilesService {
         path: fpath,
         extension: ext,
         category: 'Others',
+        userId,
       };
       const [storedFile] = await db.insert(files).values(file).returning();
 

@@ -6,6 +6,7 @@ import {
   Body,
   Query,
   Param,
+  Request,
   ParseIntPipe,
   HttpCode,
   HttpStatus,
@@ -25,6 +26,13 @@ import { CategorizeService } from 'src/categorize/categorize.service';
 import { CategoryOverrideDto } from './dtos/category-override.dto';
 import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import { JwtGuard } from 'src/guards/auth/passport.jwt.guard';
+
+interface AuthenticatedRequest {
+  user: {
+    username: string;
+    id: number;
+  };
+}
 
 @Controller('files')
 export class FilesController {
@@ -80,10 +88,18 @@ export class FilesController {
   // ! TODO: refactor, maybe change the order so the temporary DB storing is not needed (?)
   // ! maybe add some state in schema: incomplete, complete (?)
   // !  see where will this fail later.
-  async upload(@UploadedFile('file') file: Express.Multer.File) {
-    // and @UploadedFile() retrieves the resulting file object
+  async upload(
+    @Request() request: AuthenticatedRequest,
+    @UploadedFile('file') file: Express.Multer.File,
+  ) {
+    const user = request.user;
+    // and @UploadedFile() retrieves the resulting file object.
     // temporarily store the file and see if there's any duplicate
-    const fileId = await this.fileService.upload(file.originalname, file.path);
+    const fileId = await this.fileService.upload(
+      file.originalname,
+      file.path,
+      user.id,
+    );
     try {
       // before proceeding to hash, make sure the file is saved in the disk
       // the file could theoretically disappear between Multer finishing and your hashing operation.
@@ -106,7 +122,6 @@ export class FilesController {
       console.log(exists);
       // reject duplicates
       if (exists.length > 0) {
-        const existedFile = exists[0];
         // delete file from disk
         // await Fs.rm(file.path, { force: true });
         await this.fileService.deleteFromDisks(file.path);
