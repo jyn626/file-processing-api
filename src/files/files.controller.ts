@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FileMetadataService } from 'src/file-metadata/file-metadata.service';
@@ -23,6 +24,7 @@ import { access, constants } from 'node:fs/promises';
 import { CategorizeService } from 'src/categorize/categorize.service';
 import { CategoryOverrideDto } from './dtos/category-override.dto';
 import { GetFilesQueryDto } from './dtos/get-files-query.dto';
+import { JwtGuard } from 'src/guards/auth/passport.jwt.guard';
 
 @Controller('files')
 export class FilesController {
@@ -32,7 +34,7 @@ export class FilesController {
     private hashService: HashService,
     private categoryService: CategorizeService,
   ) { }
-
+  // TODO: refactor so that itll only manage files which belonges to the logged in user.
   @Get('/test')
   test() {
     return 'hello';
@@ -40,18 +42,21 @@ export class FilesController {
 
   // GET /files
   @Get()
+  @UseGuards(JwtGuard)
   async findAll(@Query() queries: GetFilesQueryDto) {
     return await this.fileService.findAll(queries);
   }
 
   // GET /files/:id
   @Get(':id')
+  @UseGuards(JwtGuard)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return await this.fileService.findOne(id);
   }
 
   // GET /files/:extension
   @Get(':extension')
+  @UseGuards(JwtGuard)
   findByExtension(@Param('extension') _extension: string) { }
 
   // POST /files
@@ -71,6 +76,7 @@ export class FilesController {
     }),
   )
   @Post()
+  @UseGuards(JwtGuard)
   // ! TODO: refactor, maybe change the order so the temporary DB storing is not needed (?)
   // ! maybe add some state in schema: incomplete, complete (?)
   // !  see where will this fail later.
@@ -143,13 +149,15 @@ export class FilesController {
   }
 
   // DELETE /files/clear
-  @Delete('/clear')
-  async clear() {
-    return await this.fileService.clear();
-  }
+  // @Delete('/clear')
+  // @UseGuards(JwtGuard)
+  // async clear() {
+  //   return await this.fileService.clear();
+  // }
 
   // DELETE /files/:id
   @Delete(':id')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.fileService.delete(id);
@@ -157,6 +165,7 @@ export class FilesController {
 
   // POST /files/:id/analyze
   @Get(':id/analyze')
+  @UseGuards(JwtGuard)
   async analyze(@Param('id', ParseIntPipe) id: number) {
     const file = await this.findOne(id);
 
@@ -165,6 +174,7 @@ export class FilesController {
 
   // POST /files/:id/hash
   @Post(':id/hash')
+  @UseGuards(JwtGuard)
   async storeHash(@Param('id') id: number) {
     const file = await this.findOne(id);
     const hash = await this.hashService.getSHA256(file.path);
@@ -178,6 +188,7 @@ export class FilesController {
   // POST /files/:id/category/override
   // override category
   @Post(':id/category/override')
+  @UseGuards(JwtGuard)
   async categoryOverride(
     @Body() categoryOverrideDto: CategoryOverrideDto,
     @Param('id') id: number,
