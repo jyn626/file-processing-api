@@ -61,8 +61,8 @@ export class FilesController {
   // GET /files/:id
   @Get(':id')
   @UseGuards(JwtGuard)
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return await this.fileService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number, userId: number) {
+    return await this.fileService.findOne(id, userId);
   }
 
   // GET /files/:extension
@@ -115,7 +115,7 @@ export class FilesController {
           // hashing failes
           console.log(error);
           await this.fileService.deleteFromDisks(file.path);
-          await this.fileService.delete(fileId);
+          await this.fileService.delete(fileId, user.id);
           throw new HttpException('Hashing failed.', HttpStatus.BAD_REQUEST);
         });
 
@@ -129,7 +129,7 @@ export class FilesController {
         // await Fs.rm(file.path, { force: true });
         await this.fileService.deleteFromDisks(file.path);
         // delete record from dn
-        await this.fileService.delete(fileId);
+        await this.fileService.delete(fileId, user.id);
         // send error
         throw new HttpException(
           'File already exists, duplicates are not supported.',
@@ -137,7 +137,7 @@ export class FilesController {
         );
       }
       // save the hash
-      await this.fileService.saveHash(fileId, newFileHash);
+      await this.fileService.saveHash(fileId, newFileHash, user.id);
 
       // get and save category
       const category = await this.categoryService.store(fileId, file.path);
@@ -177,15 +177,21 @@ export class FilesController {
   @Delete(':id')
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.fileService.delete(id);
+  delete(
+    @Request() request: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.fileService.delete(id, request.user.id);
   }
 
   // POST /files/:id/analyze
   @Get(':id/analyze')
   @UseGuards(JwtGuard)
-  async analyze(@Param('id', ParseIntPipe) id: number) {
-    const file = await this.findOne(id);
+  async analyze(
+    @Request() request: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    const file = await this.findOne(id, request.user.id);
 
     return this.fileMetadataService.read(file.path);
   }
@@ -193,10 +199,13 @@ export class FilesController {
   // POST /files/:id/hash
   @Post(':id/hash')
   @UseGuards(JwtGuard)
-  async storeHash(@Param('id') id: number) {
-    const file = await this.findOne(id);
+  async storeHash(
+    @Request() request: AuthenticatedRequest,
+    @Param('id') id: number,
+  ) {
+    const file = await this.findOne(id, request.user.id);
     const hash = await this.hashService.getSHA256(file.path);
-    await this.fileService.saveHash(id, hash);
+    await this.fileService.saveHash(id, hash, request.user.id);
     return {
       message: 'Hash successfull.',
       hash,

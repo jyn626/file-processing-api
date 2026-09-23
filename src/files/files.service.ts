@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { db } from 'src/db';
 import { and, desc, eq, gt, SQL } from 'drizzle-orm';
 import { fileMetadatas, files } from 'src/db/schema';
@@ -23,7 +27,7 @@ export class FilesService {
     //   this.files.slice(offset, limit) : this.files;
 
     if (queries.filename) {
-      return await this.findByFilename(queries.filename);
+      return await this.findByFilename(queries.filename, userId);
     }
 
     // we need to type it explicitly because if not
@@ -85,7 +89,7 @@ export class FilesService {
     return await query; // from newest to lowest
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, userId: number) {
     // const matched = this.files.find((file) => file.id === id);
 
     // if (!matched) {
@@ -94,37 +98,41 @@ export class FilesService {
     // }
 
     // return matched;
-    const matched = await db.query.files.findFirst({
-      where: eq(files.id, id),
+    const result = await db.query.files.findFirst({
+      where: and(eq(files.id, id), eq(files.userId, userId)),
     });
 
-    if (!matched) {
+    if (!result) {
       throw new NotFoundException();
     }
 
-    return matched;
+    return result;
   }
 
-  async findByFilename(filename: string) {
+  async findByFilename(filename: string, userId: number) {
     return await db.query.files.findFirst({
-      where: eq(files.name, filename),
+      where: and(eq(files.name, filename), eq(files.userId, userId)),
     });
   }
 
   async findByCategory(
     category: 'Document' | 'Image' | 'Video' | 'Audio' | 'Others',
+    userId: number,
   ) {
     return await db.query.files.findMany({
-      where: eq(files.category, category),
+      where: and(eq(files.category, category), eq(files.userId, userId)),
     });
   }
 
-  async findByExtension(extension: string) {
+  async findByExtension(extension: string, userId: number) {
     return await db.query.fileMetadatas.findMany({
       with: {
         files: true,
       },
-      where: eq(fileMetadatas.extension, extension),
+      where: and(
+        eq(fileMetadatas.extension, extension),
+        eq(files.userId, userId),
+      ),
     });
   }
 
@@ -149,18 +157,29 @@ export class FilesService {
     }
   }
 
-  async delete(id: number) {
-    // this.findOne(id); // check if the file exists first
-    // return this.files.filter((file) => file.id !== id);
-    return await db.delete(files).where(eq(files.id, id));
+  async delete(id: number, userId: number) {
+    const deletedFile = await db
+      .delete(files)
+      .where(and(eq(files.id, id), eq(files.userId, userId)))
+      .returning();
+    if (!deletedFile) throw new NotFoundException();
+
+    return deletedFile;
   }
 
   async deleteFromDisks(path: string) {
     return await Fs.rm(path, { force: true });
   }
 
-  async saveHash(id: number, hash: string) {
-    return await db.update(files).set({ sha: hash }).where(eq(files.id, id));
+  async saveHash(id: number, hash: string, userId: number) {
+    const updatedFile = await db
+      .update(files)
+      .set({ sha: hash })
+      .where(and(eq(files.id, id), eq(files.userId, userId)))
+      .returning();
+
+    if (!updatedFile) throw new NotFoundException();
+    return updatedFile;
   }
 
   async clear() {
