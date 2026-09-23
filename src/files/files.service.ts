@@ -15,7 +15,7 @@ export class FilesService {
   //   { id: 4, name: "fIeYumGSYp4MQlIlU.gif", path: "test-files/fIeYumGSYp4MQlIlU.gif" }
   // ]
 
-  async findAll(queries: GetFilesQueryDto) {
+  async findAll(queries: GetFilesQueryDto, userId: number) {
     // with simple pagination
     // return (
     //   limit && limit > 0 &&
@@ -57,13 +57,16 @@ export class FilesService {
     //   },
     // });
 
+    // fetch files that belongs to the authed User
+    conditions.push(eq(files.userId, userId));
+
     let query = db
       .select({
         file: files,
         metadata: fileMetadatas,
       })
       .from(files)
-      .leftJoin(fileMetadatas, eq(files.id, fileMetadatas.fileId))
+      .innerJoin(fileMetadatas, eq(files.id, fileMetadatas.fileId))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(fileMetadatas.creationTime), desc(fileMetadatas.size))
       .$dynamic();

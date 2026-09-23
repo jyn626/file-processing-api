@@ -51,8 +51,11 @@ export class FilesController {
   // GET /files
   @Get()
   @UseGuards(JwtGuard)
-  async findAll(@Query() queries: GetFilesQueryDto) {
-    return await this.fileService.findAll(queries);
+  async findAll(
+    @Request() request: AuthenticatedRequest,
+    @Query() queries: GetFilesQueryDto,
+  ) {
+    return await this.fileService.findAll(queries, request.user.id);
   }
 
   // GET /files/:id
