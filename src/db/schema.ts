@@ -56,8 +56,6 @@ export const filesToUserRelation = relations(files, ({ one, many }) => ({
     references: [users.id],
   }),
 }));
-
-
 // this is v2
 // // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 // export const usersToFilesRelation = defineRelations({ users, files }, (r) => ({
