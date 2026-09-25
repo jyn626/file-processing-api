@@ -51,6 +51,7 @@ export class AuthService {
   async validate({ username, password }: SignInDto) {
     // check if the user exists
     const user = await this.userService.findOne(username);
+    console.log(user);
     if (!user) {
       return false;
       // throw new HttpException('User not found.', HttpStatus.NOT_FOUND);

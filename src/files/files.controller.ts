@@ -29,7 +29,7 @@ import { JwtGuard } from 'src/guards/auth/passport.jwt.guard';
 import { OwnershipGuard } from 'src/guards/ownership/ownership.guard';
 import { PositiveNumberPipe } from 'src/pipes/positive-number/positive-number.pipe';
 
-interface AuthenticatedRequest {
+export interface AuthenticatedRequest {
   user: {
     username: string;
     id: number;
