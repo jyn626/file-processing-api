@@ -42,6 +42,11 @@ export const filesRelations = relations(files, ({ one }) => ({
     fields: [files.id],
     references: [fileMetadatas.fileId],
   }),
+
+  user: one(users, {
+    fields: [files.userId],
+    references: [users.id],
+  }),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -49,13 +54,6 @@ export const usersToFilesRelation = relations(users, ({ one, many }) => ({
   files: many(files),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const filesToUserRelation = relations(files, ({ one, many }) => ({
-  user: one(users, {
-    fields: [files.userId],
-    references: [users.id],
-  }),
-}));
 // this is v2
 // // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 // export const usersToFilesRelation = defineRelations({ users, files }, (r) => ({

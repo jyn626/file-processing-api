@@ -26,6 +26,7 @@ import { CategorizeService } from 'src/categorize/categorize.service';
 import { CategoryOverrideDto } from './dtos/category-override.dto';
 import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import { JwtGuard } from 'src/guards/auth/passport.jwt.guard';
+import { OwnershipGuard } from 'src/guards/ownership/ownership.guard';
 
 interface AuthenticatedRequest {
   user: {
@@ -60,7 +61,7 @@ export class FilesController {
 
   // GET /files/:id
   @Get(':id')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, OwnershipGuard)
   async findOne(@Param('id', ParseIntPipe) id: number, userId: number) {
     return await this.fileService.findOne(id, userId);
   }

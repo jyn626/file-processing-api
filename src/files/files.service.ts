@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { db } from 'src/db';
 import { and, desc, eq, gt, SQL } from 'drizzle-orm';
-import { fileMetadatas, files } from 'src/db/schema';
+import { fileMetadatas, files, users } from 'src/db/schema';
 import Fs from 'node:fs/promises';
 import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import path from 'node:path';
@@ -89,7 +89,8 @@ export class FilesService {
     return await query; // from newest to lowest
   }
 
-  async findOne(id: number, userId: number) {
+  async findOne(id: number) {
+    // ! The OwnershipGuard handles the checking of ownership before going through this service
     // const matched = this.files.find((file) => file.id === id);
 
     // if (!matched) {
@@ -99,7 +100,10 @@ export class FilesService {
 
     // return matched;
     const result = await db.query.files.findFirst({
-      where: and(eq(files.id, id), eq(files.userId, userId)),
+      where: eq(files.id, id),
+      with: {
+        user: true,
+      },
     });
 
     if (!result) {
@@ -180,6 +184,24 @@ export class FilesService {
 
     if (!updatedFile) throw new NotFoundException();
     return updatedFile;
+  }
+
+  async getOwner(fileId: number) {
+    // const file = await this.findOne(id);
+    // const file = await db.query.files.findFirst({
+    //   where: eq(files.id, fileId),
+    //   with: {
+    //     user: true,
+    //   },
+    // });
+
+    const [file] = await db
+      .select({ ownerId: users.id })
+      .from(files)
+      .innerJoin(users, eq(files.userId, users.id))
+      .limit(1);
+
+    return file;
   }
 
   async clear() {
