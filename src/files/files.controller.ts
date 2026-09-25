@@ -27,6 +27,7 @@ import { CategoryOverrideDto } from './dtos/category-override.dto';
 import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import { JwtGuard } from 'src/guards/auth/passport.jwt.guard';
 import { OwnershipGuard } from 'src/guards/ownership/ownership.guard';
+import { PositiveNumberPipe } from 'src/pipes/positive-number/positive-number.pipe';
 
 interface AuthenticatedRequest {
   user: {
@@ -62,8 +63,8 @@ export class FilesController {
   // GET /files/:id
   @Get(':id')
   @UseGuards(JwtGuard, OwnershipGuard)
-  async findOne(@Param('id', ParseIntPipe) id: number, userId: number) {
-    return await this.fileService.findOne(id, userId);
+  async findOne(@Param('id', PositiveNumberPipe) id: number) {
+    return await this.fileService.findOne(id);
   }
 
   // GET /files/:extension
