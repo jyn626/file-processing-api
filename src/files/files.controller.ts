@@ -188,24 +188,24 @@ export class FilesController {
 
   // POST /files/:id/analyze
   @Get(':id/analyze')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, OwnershipGuard)
   async analyze(
     @Request() request: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    const file = await this.findOne(id, request.user.id);
+    const file = await this.findOne(id);
 
     return this.fileMetadataService.read(file.path);
   }
 
   // POST /files/:id/hash
   @Post(':id/hash')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, OwnershipGuard)
   async storeHash(
     @Request() request: AuthenticatedRequest,
     @Param('id') id: number,
   ) {
-    const file = await this.findOne(id, request.user.id);
+    const file = await this.findOne(id);
     const hash = await this.hashService.getSHA256(file.path);
     await this.fileService.saveHash(id, hash, request.user.id);
     return {
