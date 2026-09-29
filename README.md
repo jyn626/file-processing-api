@@ -84,8 +84,8 @@ pnpm start:dev
 * [X] **Phase 6: Hashing** — SHA-256 streaming & duplicate detection
 * [X] **Phase 7: Categories** — Domain rules for file classification
 * [X] **Phase 8: Search & Filter** — Pagination, sorting, and search params
-* [ ] **Phase 9: Auth** — JWT authentication & resource ownership
-* [ ] **Phase 10: Pipes & Guards** — Global filters, custom decorators, ownership guards
+* [X] **Phase 9: Auth** — JWT authentication & resource ownership
+* [X] **Phase 10: Pipes & Guards** — Global filters, custom decorators, ownership guards
 * [ ] **Phase 11: Queue & Jobs** — BullMQ + Redis background processing
 * [ ] **Phase 12: Optimization** — Stream performance & memory safety
 * [ ] **Phase 13: Testing** — Unit & E2E tests with Jest
