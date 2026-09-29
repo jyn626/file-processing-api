@@ -10,9 +10,19 @@ import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersController } from './users/users.controller';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports: [FilesModule, AuthModule],
+  imports: [
+    FilesModule,
+    AuthModule,
+    BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+  ],
   controllers: [AppController, AuthController, UsersController],
   providers: [
     AppService,
