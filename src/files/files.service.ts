@@ -250,6 +250,7 @@ export class FilesService {
       attempts: 3,
     }
    })
+  return { 'message': 'Task enqueued successfully.' }
   }
 
 }
