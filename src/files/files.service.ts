@@ -9,9 +9,15 @@ import { fileMetadatas, files, users } from 'src/db/schema';
 import Fs from 'node:fs/promises';
 import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import path from 'node:path';
+import { InjectQue } from '@nestjs/bullmq'
+import { Queue } from 'bullmq'
+
 
 @Injectable()
 export class FilesService {
+  // inject the bullmq queue
+  constructor(@InjectQue('file-queue') private fileQueue: Queue)
+
   // private files = [
   //   { id: 1, name: "photo.jpg", path: "/images/photo.jpg" },
   //   { id: 2, name: "song.mp3", path: "/music/song.mp3" },
@@ -233,4 +239,17 @@ export class FilesService {
       throw error;
     }
   }
+  
+  // TODO: change file parameter type later
+  async enqueueTask(file: any) { 
+   await this.fileQueue.add(
+    'process-file',
+    {
+    ...file,
+    {
+      attempts: 3,
+    }
+   })
+  }
+
 }

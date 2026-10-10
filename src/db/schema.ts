@@ -34,6 +34,21 @@ export const fileMetadatas = sqliteTable('FileMetadatas', {
     .unique(),
 });
 
+export const processingJobs = sqliteTable('ProcessingJobs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    status: text('status', {
+        enum: ['QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED'],
+    }).default('QUEUED'),
+    fileId: integer('fileId')
+      .notNull()
+      .references(() => files.id)
+      .unique(),
+    userId: integer('fileId')
+        .notNull()
+        .references(() => users.id),
+    errorMessage: text('errorMessage'),
+});
+
 // !! THIS IS V1 RELATION IN DRIZZLE,
 // !! I CANT USE V2 EVEN THOUGH I UPGRADED FOR SOME REASON
 
