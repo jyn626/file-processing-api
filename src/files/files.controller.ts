@@ -230,7 +230,7 @@ export class FilesController {
   @Post(':id/process')
   // TODO: add jwt guard, (temporaril removed for testing)
   async processFile(
-    @UploadFile() file: Express.Multer.File 
+    @UploadedFile() file: Express.Multer.File 
   ) {
     // TODO: decide which data to pass instead of passing the whole file object 
     return await this.fileService.enqueueTask(file);
