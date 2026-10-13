@@ -5,6 +5,8 @@ import { FileMetadataService } from 'src/file-metadata/file-metadata.service';
 import { HashService } from 'src/hash/hash.service';
 import { CategorizeService } from 'src/categorize/categorize.service';
 import { BullModule } from '@nestjs/bullmq'
+import { FilesProcessor } from './files.processor.ts'
+
 @Module({
   imports: [
     BullModule.registerQueue({ name: 'file-queue' })
@@ -15,6 +17,7 @@ import { BullModule } from '@nestjs/bullmq'
     FileMetadataService,
     HashService,
     CategorizeService,
+    FilesProcessor, 
   ],
 })
 export class FilesModule { }
