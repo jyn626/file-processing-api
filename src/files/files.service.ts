@@ -241,17 +241,18 @@ export class FilesService {
   }
   
   // TODO: change file parameter type later
-  async enqueueTask(file: any) { 
-   await this.fileQueue.add(
+  async enqueueTask(filepath: string) { 
+    console.log(filepath)
+
+    await this.fileQueue.add(
     'process-file',
-    {
-    ...file,
-    },
+    { filepath },
     {
       attempts: 3
     }
    )
-  return { 'message': 'Task enqueued successfully.' }
+
+   return { 'message': 'Task enqueued successfully.' }
   }
 
 }

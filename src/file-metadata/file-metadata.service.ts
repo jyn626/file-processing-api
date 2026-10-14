@@ -9,6 +9,13 @@ import { db } from 'src/db';
 @Injectable()
 export class FileMetadataService {
   // ! TODO: manually test later
+  // reads metadata of a file from a file path
+  // returns:
+  // -  filename
+  // -  extension
+  // -  size 
+  // -  creationTime 
+  // -  mime
   read(path: string): MetadataCreateDto {
     if (!path) {
       throw new HttpException('File path missing', HttpStatus.NOT_FOUND);
@@ -44,7 +51,10 @@ export class FileMetadataService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+ 
+  // (DATABASE operation)
+  // this `read`s the metadata of a file and 
+  // save it to the DATABASE with its assigned fileId relation (1n1)
   async saveMetadata(filepath: string, fileId: number) {
     const metadata: MetadataCreateDto = this.read(filepath);
     return await db.insert(fileMetadatas).values({

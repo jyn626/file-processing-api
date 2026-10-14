@@ -226,13 +226,25 @@ export class FilesController {
     return await this.categoryService.update(id, categoryOverrideDto.category);
   }
 
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+      // FileInterceptor('file') handles the multipart field
+      storage: diskStorage({
+        destination: './uploads',
+
+        filename: (_req, file, cb) => {
+          const extension = extname(file.originalname);
+          const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
+
+          cb(null, filename);
+        },
+      }),
+    }))
   @Post(':id/process')
   // TODO: add jwt guard, (temporaril removed for testing)
   async processFile(
     @UploadedFile() file: Express.Multer.File 
   ) {
     // TODO: decide which data to pass instead of passing the whole file object 
-    return await this.fileService.enqueueTask(file);
+    return await this.fileService.enqueueTask(file.path);
   }
 }
