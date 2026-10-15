@@ -42,7 +42,7 @@ export class FilesController {
     private fileService: FilesService,
     private fileMetadataService: FileMetadataService,
     private hashService: HashService,
-    private categoryService: CategorizeService,
+    private categorizeService: CategorizeService,
   ) { }
   // TODO: refactor so that itll only manage files which belonges to the logged in user.
   @Get('/test')
@@ -142,7 +142,7 @@ export class FilesController {
       await this.fileService.saveHash(fileId, newFileHash, user.id);
 
       // get and save category
-      const category = await this.categoryService.store(fileId, file.path);
+      const category = await this.categorizeService.store(fileId, file.path);
       console.log('file category --', category);
 
       // get and save metadata
@@ -223,10 +223,14 @@ export class FilesController {
     @Param('id') id: number,
   ) {
     console.log(categoryOverrideDto);
-    return await this.categoryService.update(id, categoryOverrideDto.category);
+    return await this.categorizeService.update(
+      id,
+      categoryOverrideDto.category,
+    );
   }
 
-  @UseInterceptors(FileInterceptor('file', {
+  @UseInterceptors(
+    FileInterceptor('file', {
       // FileInterceptor('file') handles the multipart field
       storage: diskStorage({
         destination: './uploads',
@@ -238,13 +242,17 @@ export class FilesController {
           cb(null, filename);
         },
       }),
-    }))
+    }),
+  )
   @Post(':id/process')
+  @UseGuards(JwtGuard)
   // TODO: add jwt guard, (temporaril removed for testing)
   async processFile(
-    @UploadedFile() file: Express.Multer.File 
+    @Request() request: AuthenticatedRequest,
+    @Param('id') fileId: number,
   ) {
-    // TODO: decide which data to pass instead of passing the whole file object 
-    return await this.fileService.enqueueTask(file.path);
+    const user = request.user;
+    // TODO: decide which data to pass instead of passing the whole file object
+    return await this.fileService.enqueueTask(fileId, user.id);
   }
 }

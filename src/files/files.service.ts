@@ -9,14 +9,13 @@ import { fileMetadatas, files, users } from 'src/db/schema';
 import Fs from 'node:fs/promises';
 import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import path from 'node:path';
-import { InjectQueue } from '@nestjs/bullmq'
-import { Queue } from 'bullmq'
-
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class FilesService {
   // inject the bullmq queue
-  constructor(@InjectQueue('file-queue') private fileQueue: Queue) {}
+  constructor(@InjectQueue('file-queue') private fileQueue: Queue) { }
 
   // private files = [
   //   { id: 1, name: "photo.jpg", path: "/images/photo.jpg" },
@@ -239,20 +238,17 @@ export class FilesService {
       throw error;
     }
   }
-  
+
   // TODO: change file parameter type later
-  async enqueueTask(filepath: string) { 
-    console.log(filepath)
-
+  async enqueueTask(fileId: number, userId: number) {
     await this.fileQueue.add(
-    'process-file',
-    { filepath },
-    {
-      attempts: 3
-    }
-   )
+      'process-file',
+      { fileId, userId },
+      {
+        attempts: 3,
+      },
+    );
 
-   return { 'message': 'Task enqueued successfully.' }
+    return { message: 'Task enqueued successfully.' };
   }
-
 }

@@ -52,13 +52,16 @@ export class FileMetadataService {
   }
 
   // (DATABASE operation)
-  // this `read`s the metadata of a file and
-  // save it to the DATABASE with its assigned fileId relation (1n1)
+  // this `read`s the metadata of a file first
+  // theb save it to the DATABASE with its assigned fileId relation (1n1)
   async saveMetadata(filepath: string, fileId: number) {
     const metadata: MetadataCreateDto = this.read(filepath);
-    return await db.insert(fileMetadatas).values({
+
+    await db.insert(fileMetadatas).values({
       ...metadata,
       fileId,
     });
+
+    return metadata;
   }
 }
