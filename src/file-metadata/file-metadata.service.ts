@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { statSync } from 'node:fs';
 import { basename, extname } from 'node:path';
-import { Mime } from 'mime';
 import { fileMetadatas } from 'src/db/schema';
 import { MetadataCreateDto } from './dtos/metadata-create.dto';
 import { db } from 'src/db';
@@ -13,8 +12,8 @@ export class FileMetadataService {
   // returns:
   // -  filename
   // -  extension
-  // -  size 
-  // -  creationTime 
+  // -  size
+  // -  creationTime
   // -  mime
   read(path: string): MetadataCreateDto {
     if (!path) {
@@ -51,9 +50,9 @@ export class FileMetadataService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
- 
+
   // (DATABASE operation)
-  // this `read`s the metadata of a file and 
+  // this `read`s the metadata of a file and
   // save it to the DATABASE with its assigned fileId relation (1n1)
   async saveMetadata(filepath: string, fileId: number) {
     const metadata: MetadataCreateDto = this.read(filepath);
