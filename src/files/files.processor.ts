@@ -31,27 +31,54 @@ export class FilesProcessor extends WorkerHost {
       where: eq(files.id, fileId),
     });
 
-    // get file metedata
-    const metadata = await this.fileMetadataService.saveMetadata(
-      file!.path,
-      fileId,
-    );
+    if (!file) {
+      throw new Error('File is not saved from disk.');
+    }
 
-    const sha256 = await this.hashService.getSHA256(file!.path);
-    await this.fileService.saveHash(file!.id, sha256, userId);
+    // first get file hash
+    const hash = await this.hashService
+      .getSHA256(file.path)
+      // .catch(async (error) => {
+      //   // hashing failes
+      //   console.log(error);
+      //   await this.fileService.deleteFromDisks(file.path);
+      //   await this.fileService.delete(fileId, user.id);
+      //   throw new HttpException('Hashing failed.', HttpStatus.BAD_REQUEST);
+      // });
 
-    const category = this.categorizeService.getCategory(file!.path);
-    await this.categorizeService.store(file!.id, file!.path);
+    // check if the file exists base on hash
+    const exists = await this.hashService.getDuplicates(hash);
 
-    const result = {
-      ...metadata,
-      hash: sha256,
-      category,
-    };
+    console.log('-- exists: ', exists.length);
+    console.log(exists);
+    // reject duplicates
+    if (exists.length > 0) {
+      const duplicate = exists.filter((f) => f.userId === userId);
+      console.log('duplicate ', duplicate)
+      if (duplicate.length) {
+        // delete file from disk
+        // await Fs.rm(file.path, { force: true });
+        await this.fileService.deleteFromDisks(file.path);
+        // delete record from dn
+        await this.fileService.delete(fileId, userId);
+        // send error
+        throw new Error(
+          'File already exists, duplicates are not supported.'
+        );
+      }
+    }
 
-    console.log(result);
+    // save the hash
+    await this.fileService.saveHash(fileId, hash, userId);
 
-    return { success: true, result };
+    // get and save category
+    const category = await this.categorizeService.store(fileId, file.path);
+    console.log('file category --', category);
+
+    // get and save metedata
+    await this.fileMetadataService.saveMetadata(file.path, fileId);
+
+    return { success: true, action: 'Process hashing, extracting metada, and getting file category.' };
   }
 
   @OnWorkerEvent('completed')

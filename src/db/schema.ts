@@ -11,7 +11,7 @@ export const files = sqliteTable('Files', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   path: text('path').notNull().unique(),
-  sha: text('sha').unique(),
+  sha: text('sha'), // can't really add a .unique() here since there might be instances where different users have the same file, what might be a good solution ?
   extension: text('extension'),
   category: text('category', {
     enum: ['Document', 'Image', 'Video', 'Audio', 'Others'],

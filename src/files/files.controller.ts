@@ -105,49 +105,16 @@ export class FilesController {
       file.path,
       user.id,
     );
+
     try {
       // before proceeding to hash, make sure the file is saved in the disk
       // the file could theoretically disappear between Multer finishing and your hashing operation.
       await access(file.path, constants.F_OK);
 
-      // after the file upload is complete, compute hash and check if it already exists
-      const newFileHash = await this.hashService
-        .getSHA256(file.path)
-        .catch(async (error) => {
-          // hashing failes
-          console.log(error);
-          await this.fileService.deleteFromDisks(file.path);
-          await this.fileService.delete(fileId, user.id);
-          throw new HttpException('Hashing failed.', HttpStatus.BAD_REQUEST);
-        });
+      // enqueue task, this will process its hash, extract metadata, and get category.
+      // this will be processed in background.
+      await this.fileService.enqueueTask(fileId, user.id);
 
-      const exists = await this.hashService.getDuplicates(newFileHash);
-
-      console.log('-- exists: ', exists.length);
-      console.log(exists);
-      // reject duplicates
-      if (exists.length > 0) {
-        // delete file from disk
-        // await Fs.rm(file.path, { force: true });
-        await this.fileService.deleteFromDisks(file.path);
-        // delete record from dn
-        await this.fileService.delete(fileId, user.id);
-        // send error
-        throw new HttpException(
-          'File already exists, duplicates are not supported.',
-          HttpStatus.CONFLICT,
-        );
-      }
-      // save the hash
-      await this.fileService.saveHash(fileId, newFileHash, user.id);
-
-      // get and save category
-      const category = await this.categorizeService.store(fileId, file.path);
-      console.log('file category --', category);
-
-      // get and save metadata
-      await this.fileMetadataService.saveMetadata(file.path, fileId);
-      // if theyre arent duplicates then store the file.
       return {
         message: 'Upload successfull.',
         filepath: file.path,
@@ -229,30 +196,30 @@ export class FilesController {
     );
   }
 
-  @UseInterceptors(
-    FileInterceptor('file', {
-      // FileInterceptor('file') handles the multipart field
-      storage: diskStorage({
-        destination: './uploads',
-
-        filename: (_req, file, cb) => {
-          const extension = extname(file.originalname);
-          const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
-
-          cb(null, filename);
-        },
-      }),
-    }),
-  )
-  @Post(':id/process')
-  @UseGuards(JwtGuard)
-  // TODO: add jwt guard, (temporaril removed for testing)
-  async processFile(
-    @Request() request: AuthenticatedRequest,
-    @Param('id') fileId: number,
-  ) {
-    const user = request.user;
-    // TODO: decide which data to pass instead of passing the whole file object
-    return await this.fileService.enqueueTask(fileId, user.id);
-  }
+  // @UseInterceptors(
+  //   FileInterceptor('file', {
+  //     // FileInterceptor('file') handles the multipart field
+  //     storage: diskStorage({
+  //       destination: './uploads',
+  //
+  //       filename: (_req, file, cb) => {
+  //         const extension = extname(file.originalname);
+  //         const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
+  //
+  //         cb(null, filename);
+  //       },
+  //     }),
+  //   }),
+  // )
+  // @Post(':id/process')
+  // @UseGuards(JwtGuard)
+  // // TODO: add jwt guard, (temporaril removed for testing)
+  // async processFile(
+  //   @Request() request: AuthenticatedRequest,
+  //   @Param('id') fileId: number,
+  // ) {
+  //   const user = request.user;
+  //   // TODO: decide which data to pass instead of passing the whole file object
+  //   return await this.fileService.enqueueTask(fileId, user.id);
+  // }
 }
