@@ -53,6 +53,7 @@ export class FilesController {
 
   // TEMP: for testing
   @Get('/jobs')
+  @UseGuards(JwtGuard)
   async jobs() {
     // const statuses: JobType[] = [
     //   'waiting',
