@@ -1,1 +1,0 @@
-DROP INDEX `Files_sha_unique`;

@@ -6,8 +6,9 @@ import { HashService } from '../hash/hash.service';
 import { CategorizeService } from 'src/categorize/categorize.service';
 import { db } from 'src/db';
 import { files } from 'src/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { FilesService } from './files.service';
+import { processingJobs } from '../db/schema'
 
 @Injectable()
 @Processor('file-queue')
@@ -82,12 +83,33 @@ export class FilesProcessor extends WorkerHost {
   }
 
   @OnWorkerEvent('completed')
-  onCompleted(job: Job) {
+  async onCompleted(job: Job) {
     console.log(`Job ${job.id} completed successfully.`);
+
+    await db.update(processingJobs)
+      .set({
+        status: 'COMPLETED'
+      })
+      .where(
+        and(eq(processingJobs.fileId, job.data.fileId), eq(processingJobs.userId, job.data.userId))
+      )
+
   }
 
   @OnWorkerEvent('failed')
-  onFailed(job: Job, error: Error) {
+  async onFailed(job: Job, error: Error) {
     console.log(`Job ${job.id} failed with error: ${error.message}`);
+    console.log(job.data.fileId)
+    console.log(job.data.userId)
+
+  await db.update(processingJobs)
+      .set({
+        status: 'FAILED',
+        errorMessage: error.message
+      })
+      .where(
+        and(eq(processingJobs.fileId, job.data.fileId), eq(processingJobs.userId, job.data.userId))
+      )
+
   }
 }

@@ -11,6 +11,7 @@ import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import path from 'node:path';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { processingJobs } from '../db/schema'
 
 @Injectable()
 export class FilesService {
@@ -242,7 +243,16 @@ export class FilesService {
   // TODO: change file parameter type later
   async enqueueTask(fileId: number, userId: number) {
     try {
-      await this.fileQueue.add(
+      // TODO: create record QUEUED for processingJobs
+      // when the job goes in the processor update it to PROCESSING,
+      await db.insert(processingJobs).values({
+        status: 'QUEUED',
+        userId,
+        fileId,
+      })
+
+
+      const job = await this.fileQueue.add(
         'process-file',
         { fileId, userId },
         {
@@ -250,9 +260,12 @@ export class FilesService {
         },
       );
 
-      return { message: 'Task enqueued successfully.' };
+      return {
+        message: 'Task enqueued successfully.',
+        jobId: job.id
+      };
   } catch(error) {
-    throw error;
-  }
+      throw error;
+    }
   }
 }

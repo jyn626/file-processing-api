@@ -90,6 +90,7 @@ export class FilesController {
   )
   @Post()
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.ACCEPTED)
   // ! TODO: refactor, maybe change the order so the temporary DB storing is not needed (?)
   // ! maybe add some state in schema: incomplete, complete (?)
   // !  see where will this fail later.
@@ -113,11 +114,13 @@ export class FilesController {
 
       // enqueue task, this will process its hash, extract metadata, and get category.
       // this will be processed in background.
-      await this.fileService.enqueueTask(fileId, user.id);
+      const { jobId } = await this.fileService.enqueueTask(fileId, user.id);
 
       return {
-        message: 'Upload successfull.',
-        filepath: file.path,
+        message: 'File uploaded. Processing has been queued.',
+        jobId,
+        fileId,
+        status: 'QUEUED'
       };
     } catch (error: any) {
       // ! TODO: confirm this is working.

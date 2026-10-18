@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7b20fd83-5fa3-410f-8468-ef1c6cc4b26b",
+  "id": "e724da75-2d04-4523-96da-bcfa39261f8d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "FileMetadatas": {
@@ -146,19 +146,93 @@
             "path"
           ],
           "isUnique": true
-        },
-        "Files_sha_unique": {
-          "name": "Files_sha_unique",
-          "columns": [
-            "sha"
-          ],
-          "isUnique": true
         }
       },
       "foreignKeys": {
         "Files_userId_Users_id_fk": {
           "name": "Files_userId_Users_id_fk",
           "tableFrom": "Files",
+          "tableTo": "Users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "ProcessingJobs": {
+      "name": "ProcessingJobs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'QUEUED'"
+        },
+        "fileId": {
+          "name": "fileId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "errorMessage": {
+          "name": "errorMessage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "ProcessingJobs_fileId_unique": {
+          "name": "ProcessingJobs_fileId_unique",
+          "columns": [
+            "fileId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "ProcessingJobs_fileId_Files_id_fk": {
+          "name": "ProcessingJobs_fileId_Files_id_fk",
+          "tableFrom": "ProcessingJobs",
+          "tableTo": "Files",
+          "columnsFrom": [
+            "fileId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ProcessingJobs_userId_Users_id_fk": {
+          "name": "ProcessingJobs_userId_Users_id_fk",
+          "tableFrom": "ProcessingJobs",
           "tableTo": "Users",
           "columnsFrom": [
             "userId"

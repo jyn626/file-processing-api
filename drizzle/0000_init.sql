@@ -22,7 +22,17 @@ CREATE TABLE `Files` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `Files_path_unique` ON `Files` (`path`);--> statement-breakpoint
-CREATE UNIQUE INDEX `Files_sha_unique` ON `Files` (`sha`);--> statement-breakpoint
+CREATE TABLE `ProcessingJobs` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`status` text DEFAULT 'QUEUED',
+	`fileId` integer NOT NULL,
+	`userId` integer NOT NULL,
+	`errorMessage` text,
+	FOREIGN KEY (`fileId`) REFERENCES `Files`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`userId`) REFERENCES `Users`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `ProcessingJobs_fileId_unique` ON `ProcessingJobs` (`fileId`);--> statement-breakpoint
 CREATE TABLE `Users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`username` text NOT NULL,

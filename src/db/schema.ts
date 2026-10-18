@@ -43,7 +43,7 @@ export const processingJobs = sqliteTable('ProcessingJobs', {
       .notNull()
       .references(() => files.id)
       .unique(),
-    userId: integer('fileId')
+    userId: integer('userId')
         .notNull()
         .references(() => users.id),
     errorMessage: text('errorMessage'),
