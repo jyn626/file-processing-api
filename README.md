@@ -86,7 +86,7 @@ pnpm start:dev
 * [X] **Phase 8: Search & Filter** — Pagination, sorting, and search params
 * [X] **Phase 9: Auth** — JWT authentication & resource ownership
 * [X] **Phase 10: Pipes & Guards** — Global filters, custom decorators, ownership guards
-* [ ] **Phase 11: Queue & Jobs** — BullMQ + Redis background processing
+* [X] **Phase 11: Queue & Jobs** — BullMQ + Redis background processing
 * [ ] **Phase 12: Optimization** — Stream performance & memory safety
 * [ ] **Phase 13: Testing** — Unit & E2E tests with Jest
 * [ ] **Phase 14: Error Handling** — Standardized error responses & retries
