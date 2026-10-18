@@ -239,38 +239,4 @@ export class FilesService {
       throw error;
     }
   }
-
-  // TODO: change file parameter type later
-  async enqueueTask(fileId: number, userId: number) {
-    try {
-      // TODO: create record QUEUED for processingJobs
-      // when the job goes in the processor update it to PROCESSING,
-      await db.insert(processingJobs).values({
-        status: 'QUEUED',
-        userId,
-        fileId,
-      })
-
-
-      const job = await this.fileQueue.add(
-        'process-file',
-        { fileId, userId },
-        {
-          attempts: 3,
-        },
-      );
-
-      return {
-        message: 'Task enqueued successfully.',
-        jobId: job.id
-      };
-  } catch(error) {
-      throw error;
-    }
-  }
-
-  async getJobs() {
-    return db.query.processingJobs.findMany();
-  }
-
 }

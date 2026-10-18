@@ -11,6 +11,9 @@ import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersController } from './users/users.controller';
 import { BullModule } from '@nestjs/bullmq';
+import { JobsController } from './jobs/jobs.controller';
+import { JobsService } from './jobs/jobs.service';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -22,8 +25,9 @@ import { BullModule } from '@nestjs/bullmq';
         port: 6379,
       },
     }),
+    JobsModule,
   ],
-  controllers: [AppController, AuthController, UsersController],
+  controllers: [AppController, AuthController, UsersController, JobsController],
   providers: [
     AppService,
     FileMetadataService,
@@ -31,6 +35,7 @@ import { BullModule } from '@nestjs/bullmq';
     CategorizeService,
     UsersService,
     AuthService,
+    JobsService,
   ],
 })
 export class AppModule { }

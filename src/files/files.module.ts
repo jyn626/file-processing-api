@@ -6,6 +6,7 @@ import { HashService } from 'src/hash/hash.service';
 import { CategorizeService } from 'src/categorize/categorize.service';
 import { BullModule } from '@nestjs/bullmq'
 import { FilesProcessor } from './files.processor'
+import { JobsService } from '../jobs/jobs.service'
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { FilesProcessor } from './files.processor'
     FileMetadataService,
     HashService,
     CategorizeService,
-    FilesProcessor, 
+    FilesProcessor,
+    JobsService,
   ],
 })
 export class FilesModule { }

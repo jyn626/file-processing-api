@@ -29,6 +29,7 @@ import { JwtGuard } from 'src/guards/auth/passport.jwt.guard';
 import { OwnershipGuard } from 'src/guards/ownership/ownership.guard';
 import { PositiveNumberPipe } from 'src/pipes/positive-number/positive-number.pipe';
 import { JobType } from 'bullmq'
+import { JobsService } from '../jobs/jobs.service'
 
 export interface AuthenticatedRequest {
   user: {
@@ -44,6 +45,7 @@ export class FilesController {
     private fileMetadataService: FileMetadataService,
     private hashService: HashService,
     private categorizeService: CategorizeService,
+    private jobsService: JobsService,
   ) { }
   // TODO: refactor so that itll only manage files which belonges to the logged in user.
   @Get('/test')
@@ -63,7 +65,7 @@ export class FilesController {
     //   'delayed',
     // ]
 
-    return await this.fileService.getJobs();
+    return await this.jobsService.getJobs();
   }
 
   // GET /files
@@ -130,7 +132,7 @@ export class FilesController {
 
       // enqueue task, this will process its hash, extract metadata, and get category.
       // this will be processed in background.
-      const { jobId } = await this.fileService.enqueueTask(fileId, user.id);
+      const { jobId } = await this.jobsService.enqueueFileJob(fileId, user.id);
 
       return {
         message: 'File uploaded. Processing has been queued.',
