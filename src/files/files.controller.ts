@@ -28,6 +28,7 @@ import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import { JwtGuard } from 'src/guards/auth/passport.jwt.guard';
 import { OwnershipGuard } from 'src/guards/ownership/ownership.guard';
 import { PositiveNumberPipe } from 'src/pipes/positive-number/positive-number.pipe';
+import { JobType } from 'bullmq'
 
 export interface AuthenticatedRequest {
   user: {
@@ -48,6 +49,20 @@ export class FilesController {
   @Get('/test')
   test() {
     return 'hello';
+  }
+
+  // TEMP: for testing
+  @Get('/jobs')
+  async jobs() {
+    // const statuses: JobType[] = [
+    //   'waiting',
+    //   'active',
+    //   'completed',
+    //   'failed',
+    //   'delayed',
+    // ]
+
+    return await this.fileService.getJobs();
   }
 
   // GET /files
@@ -199,30 +214,5 @@ export class FilesController {
     );
   }
 
-  // @UseInterceptors(
-  //   FileInterceptor('file', {
-  //     // FileInterceptor('file') handles the multipart field
-  //     storage: diskStorage({
-  //       destination: './uploads',
-  //
-  //       filename: (_req, file, cb) => {
-  //         const extension = extname(file.originalname);
-  //         const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
-  //
-  //         cb(null, filename);
-  //       },
-  //     }),
-  //   }),
-  // )
-  // @Post(':id/process')
-  // @UseGuards(JwtGuard)
-  // // TODO: add jwt guard, (temporaril removed for testing)
-  // async processFile(
-  //   @Request() request: AuthenticatedRequest,
-  //   @Param('id') fileId: number,
-  // ) {
-  //   const user = request.user;
-  //   // TODO: decide which data to pass instead of passing the whole file object
-  //   return await this.fileService.enqueueTask(fileId, user.id);
-  // }
+
 }

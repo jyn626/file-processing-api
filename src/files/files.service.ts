@@ -10,7 +10,7 @@ import Fs from 'node:fs/promises';
 import { GetFilesQueryDto } from './dtos/get-files-query.dto';
 import path from 'node:path';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
+import { Queue, JobType } from 'bullmq';
 import { processingJobs } from '../db/schema'
 
 @Injectable()
@@ -268,4 +268,9 @@ export class FilesService {
       throw error;
     }
   }
+
+  async getJobs() {
+    return db.query.processingJobs.findMany();
+  }
+
 }
